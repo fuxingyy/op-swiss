@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OP Swiss (Bo1)</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111827" />
+  <link rel="icon" href="data:,">
+
+  <style>
+    :root { --bg:#0b1220; --card:#111827; --muted:#9ca3af; --text:#e5e7eb; --acc:#22c55e; --warn:#f59e0b; --bad:#ef4444; }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
+    header{ padding:16px; position:sticky; top:0; background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.85)); backdrop-filter: blur(6px); z-index:10;}
+    h1{ margin:0 0 4px; font-size:18px;}
+    .sub{ color:var(--muted); font-size:13px;}
+    .wrap{ max-width:1000px; margin:0 auto; padding:12px 12px 84px; }
+    .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media(min-width:900px){ .grid{ grid-template-columns: 380px 1fr; } }
+    .card{ background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    input,select,button{
+      font:inherit; padding:10px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.10);
+      background:#0f172a; color:var(--text); outline:none;
+    }
+    input::placeholder{ color:#6b7280; }
+    button{ cursor:pointer; }
+    button.primary{ background:var(--acc); border-color:rgba(0,0,0,.2); color:#052e16; font-weight:800; }
+    button.ghost{ background:transparent; }
+    button.warn{ background:var(--warn); color:#2b1c00; font-weight:800; }
+    button.bad{ background:var(--bad); color:#2a0707; font-weight:800; }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    .small{ font-size:12px; color:var(--muted); }
+    .pill{ display:inline-flex; padding:3px 8px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.12); color:var(--muted);}
+    .divider{ height:1px; background:rgba(255,255,255,.06); margin:10px 0; }
+    table{ width:100%; border-collapse:collapse; }
+    th,td{ text-align:left; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; white-space:nowrap;}
+    th{ color:#cbd5e1; font-weight:800; }
+    .right{ text-align:right; }
+    .ok{ color:var(--acc); font-weight:900; }
+    .pending{ color:var(--warn); font-weight:900; }
+    .muted{ color:var(--muted); }
+    .list{ display:flex; flex-direction:column; gap:8px; }
+    .match{ display:flex; justify-content:space-between; gap:10px; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); }
+    .match strong{ font-size:14px; }
+    .match .meta{ font-size:12px; color:var(--muted); }
+    .footerbar{ position:fixed; bottom:0; left:0; right:0; padding:10px; background:rgba(11,18,32,.85); backdrop-filter:blur(6px); border-top:1px solid rgba(255,255,255,.06); }
+    .footerbar .wrap{ padding:0 12px; }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <h1>One Piece Swiss (Best of 1)</h1>
+    <div class="sub">Swiss real: downpairing, BYE (R1 random, después lowest), sin empates, evita rematches, drop, tiebreaks (Pts→OMW→SOS→MW).</div>
+  </div>
+</header>
+
+<div class="wrap grid">
+  <!-- LEFT -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div class="pill" id="statusPill">Sin torneo</div>
+        <div class="small" id="statusText">Crea o importa un torneo.</div>
+      </div>
+      <button class="ghost" id="btnReset" title="Borrar todo (local)">Reset</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row">
+      <input id="tName" placeholder="Nombre del torneo" style="flex:1" />
+      <input id="tRounds" placeholder="Rondas (auto)" type="number" min="1" style="width:130px" disabled />
+      <button class="primary" id="btnCreate">Crear</button>
+    </div>
+    <div class="small">Rondas sugeridas se calculan solas según jugadores activos. El torneo termina cuando queda 1 invicto.</div>
+
+    <div class="divider"></div>
+
+    <div class="row">
+      <input id="playerName" placeholder="Agregar jugador (nombre)" style="flex:1" />
+      <button id="btnAdd">Agregar</button>
+    </div>
+    <div class="small" id="playersCount">0 jugadores</div>
+
+    <div class="row" style="margin-top:8px">
+      <select id="dropSelect" style="flex:1"></select>
+      <button class="bad" id="btnDrop">Drop</button>
+      <button class="ghost" id="btnUndrop">Undo Drop</button>
+    </div>
+    <div class="small">Drop: no juega más rondas. Resultados previos se mantienen.</div>
+
+    <div class="divider"></div>
+
+    <div class="row">
+      <button class="primary" id="btnNextRound">Generar siguiente ronda</button>
+      <button class="ghost" id="btnShowRound">Ver ronda actual</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row">
+      <button class="ghost" id="btnExport">Export JSON</button>
+      <label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+        <span>Import JSON</span>
+      </label>
+    </div>
+    <div class="small">Si cambias de dispositivo: Export → Import.</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div class="pill">Standings</div>
+        <div class="small muted">Orden: Pts → OMW% → SOS → MW% → Nombre</div>
+      </div>
+      <div class="row">
+        <button class="ghost" id="btnRefresh">Actualizar</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="overflow:auto;">
+      <table id="standingsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Jugador</th>
+            <th class="right">Pts</th>
+            <th class="right">W-L</th>
+            <th class="right">MW%</th>
+            <th class="right">OMW%</th>
+            <th class="right">SOS</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row" style="justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div class="pill">Ronda actual</div>
+        <div class="small" id="roundLabel">—</div>
+      </div>
+      <div class="small muted" id="champLabel"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="list" id="matchesList"></div>
+  </div>
+</div>
+
+<div class="footerbar">
+  <div class="wrap row" style="justify-content:space-between;">
+    <div class="small muted">Se guarda en este dispositivo (localStorage). GitHub Pages solo sirve la web.</div>
+    <button class="ghost" id="btnInstallHint">Instalar</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => { deferredPrompt = e; });
+  document.getElementById('btnInstallHint').addEventListener('click', async () => {
+    if (!deferredPrompt) { alert("Android/Chrome: menú ⋮ → 'Agregar a pantalla principal'. iPhone/Safari: compartir → 'Add to Home Screen'."); return; }
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+</script>
+</body>
+</html>
