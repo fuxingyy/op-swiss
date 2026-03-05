@@ -1,25 +1,23 @@
-// sw.js — updates-friendly (GitHub Pages)
-// Network-first for HTML/JS so new deploy shows immediately.
+// sw.js — GitHub Pages friendly, update-safe
+// v6: Network-first for navigation so users don't get stuck on old index.html
 
-const CACHE = "op-swiss-cache-v5";
-
-const CORE = [
-  "./",
-  "./index.html",
-  "./app.js?v=5",
-  "./manifest.webmanifest",
+const CACHE = "op-swiss-cache-v6";
+const ASSETS = [
   "./logo.png",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./manifest.webmanifest",
 ];
 
+// Install: cache only static assets (NOT index.html, NOT app.js)
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(CORE)).catch(() => {})
+    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).catch(() => {})
   );
 });
 
+// Activate: delete old caches + take control immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -34,34 +32,47 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin !== self.location.origin) return;
 
-  const isHTML =
-    req.mode === "navigate" ||
-    url.pathname.endsWith(".html") ||
-    url.pathname === "/" ||
-    url.pathname.endsWith("/op-swiss/");
-
+  const isNavigation = req.mode === "navigate";
   const isAsset =
     url.pathname.endsWith(".js") ||
     url.pathname.endsWith(".css") ||
-    url.pathname.endsWith(".webmanifest") ||
-    url.pathname.endsWith(".json") ||
     url.pathname.endsWith(".png") ||
-    url.pathname.endsWith(".ico");
+    url.pathname.endsWith(".ico") ||
+    url.pathname.endsWith(".webmanifest") ||
+    url.pathname.endsWith(".json");
 
-  if (isHTML || isAsset) {
+  // ✅ Navigation: NETWORK FIRST (always try to get fresh index.html)
+  if (isNavigation) {
     event.respondWith((async () => {
       try {
-        const fresh = await fetch(req, { cache: "no-store" });
-        const cache = await caches.open(CACHE);
-        cache.put(req, fresh.clone());
-        return fresh;
+        // important: no-store so browser doesn't serve a cached HTML
+        return await fetch(req, { cache: "no-store" });
       } catch {
-        const cached = await caches.match(req);
-        return cached || fetch(req);
+        // offline fallback: try cached root or any cached html
+        const cached = await caches.match("./");
+        return cached || Response.error();
       }
     })());
     return;
   }
 
-  event.respondWith(caches.match(req).then((res) => res || fetch(req)));
+  // ✅ Assets: stale-while-revalidate (fast + updates in background)
+  if (isAsset) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match(req);
+
+      const fetchPromise = fetch(req).then((fresh) => {
+        cache.put(req, fresh.clone());
+        return fresh;
+      }).catch(() => null);
+
+      // return cache immediately if exists, else wait for network
+      return cached || (await fetchPromise) || Response.error();
+    })());
+    return;
+  }
+
+  // Default: just pass through
+  event.respondWith(fetch(req));
 });
