@@ -4,58 +4,186 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OP Swiss (Bo1)</title>
+
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#111827" />
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
   <link rel="icon" href="data:,">
 
   <style>
-    :root { --bg:#0b1220; --card:#111827; --muted:#9ca3af; --text:#e5e7eb; --acc:#22c55e; --warn:#f59e0b; --bad:#ef4444; }
+    :root{
+      --bg:#0b1220; --card:#111827; --muted:#9ca3af; --text:#e5e7eb;
+      --acc:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+      --accent2:#60a5fa;
+    }
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
     body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
-    header{ padding:16px; position:sticky; top:0; background:linear-gradient(180deg,var(--bg),rgba(11,18,32,.85)); backdrop-filter: blur(6px); z-index:10;}
-    h1{ margin:0 0 4px; font-size:18px;}
-    .sub{ color:var(--muted); font-size:13px;}
-    .wrap{ max-width:1000px; margin:0 auto; padding:12px 12px 84px; }
+
+    /* Header: NOT sticky on mobile */
+    header{
+      padding:14px 12px;
+      position:relative;
+      background:linear-gradient(180deg,rgba(11,18,32,1),rgba(11,18,32,.88));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    @media(min-width:900px){
+      header{ position:sticky; top:0; z-index:10; backdrop-filter: blur(6px); }
+    }
+
+    .wrap{ max-width:1040px; margin:0 auto; padding:12px 12px 104px; }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .brand img{ width:34px; height:34px; object-fit:contain; border-radius:10px; background:rgba(255,255,255,.06); padding:6px; border:1px solid rgba(255,255,255,.08); }
+    h1{ margin:0; font-size:18px; line-height:1.1; }
+    .sub{ color:var(--muted); font-size:13px; margin-top:3px; }
+
+    /* Smaller header on small phones */
+    @media(max-width:520px){
+      header{ padding:10px 10px; }
+      .brand img{ width:30px; height:30px; padding:5px; }
+      h1{ font-size:16px; }
+      .sub{ display:none; }
+    }
+
     .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
-    @media(min-width:900px){ .grid{ grid-template-columns: 380px 1fr; } }
-    .card{ background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    @media(min-width:900px){ .grid{ grid-template-columns: 400px 1fr; } }
+
+    .card{ background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
     .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     input,select,button{
-      font:inherit; padding:10px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.10);
+      font:inherit; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10);
       background:#0f172a; color:var(--text); outline:none;
     }
     input::placeholder{ color:#6b7280; }
     button{ cursor:pointer; }
-    button.primary{ background:var(--acc); border-color:rgba(0,0,0,.2); color:#052e16; font-weight:800; }
+    button.primary{ background:var(--acc); border-color:rgba(0,0,0,.2); color:#052e16; font-weight:900; }
     button.ghost{ background:transparent; }
-    button.warn{ background:var(--warn); color:#2b1c00; font-weight:800; }
-    button.bad{ background:var(--bad); color:#2a0707; font-weight:800; }
+    button.bad{ background:var(--bad); color:#2a0707; font-weight:900; }
+    button.blue{ background:var(--accent2); color:#071827; font-weight:900; }
     button:disabled{ opacity:.55; cursor:not-allowed; }
+
     .small{ font-size:12px; color:var(--muted); }
-    .pill{ display:inline-flex; padding:3px 8px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.12); color:var(--muted);}
+    .pill{ display:inline-flex; padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.12); color:#cbd5e1;}
     .divider{ height:1px; background:rgba(255,255,255,.06); margin:10px 0; }
+
     table{ width:100%; border-collapse:collapse; }
-    th,td{ text-align:left; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; white-space:nowrap;}
-    th{ color:#cbd5e1; font-weight:800; }
+    th,td{ text-align:left; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; white-space:nowrap; }
+    th{ color:#cbd5e1; font-weight:900; }
     .right{ text-align:right; }
+
+    /* Standings compact on mobile */
+    @media(max-width:520px){
+      th,td{ font-size:12px; padding:7px 5px; }
+      th.sos, td.sos{ display:none; } /* hide SOS on tiny screens */
+    }
+
     .ok{ color:var(--acc); font-weight:900; }
     .pending{ color:var(--warn); font-weight:900; }
     .muted{ color:var(--muted); }
     .list{ display:flex; flex-direction:column; gap:8px; }
-    .match{ display:flex; justify-content:space-between; gap:10px; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); }
+
+    .match{
+      display:flex; justify-content:space-between; gap:10px;
+      padding:10px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+    }
     .match strong{ font-size:14px; }
     .match .meta{ font-size:12px; color:var(--muted); }
-    .footerbar{ position:fixed; bottom:0; left:0; right:0; padding:10px; background:rgba(11,18,32,.85); backdrop-filter:blur(6px); border-top:1px solid rgba(255,255,255,.06); }
+
+    /* Matches super-compact on mobile */
+    @media(max-width:520px){
+      .match{ padding:8px; gap:8px; }
+      .match strong{ font-size:13px; }
+      .match .meta{ display:none; } /* removes extra text */
+      .match button{ padding:8px 10px; border-radius:12px; }
+    }
+
+    /* Footer info bar */
+    .footerbar{
+      position:fixed; bottom:0; left:0; right:0;
+      padding:10px; background:rgba(11,18,32,.85); backdrop-filter:blur(6px);
+      border-top:1px solid rgba(255,255,255,.06);
+      z-index:10;
+    }
     .footerbar .wrap{ padding:0 12px; }
+
+    /* Mobile action bar (3 buttons) */
+    .actionbar{
+      position:fixed;
+      left:0; right:0;
+      bottom:52px; /* sits above footerbar */
+      z-index:11;
+      padding:10px;
+      background:linear-gradient(180deg,rgba(11,18,32,.15),rgba(11,18,32,.92));
+      backdrop-filter: blur(6px);
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+    .actionbar .inner{
+      max-width:1040px; margin:0 auto;
+      display:flex; gap:10px;
+      padding:0 12px;
+    }
+    .actionbar button{ flex:1; padding:12px 10px; border-radius:14px; }
+
+    /* Only show actionbar on mobile/tablet */
+    @media(min-width:900px){
+      .actionbar{ display:none; }
+      .wrap{ padding-bottom:92px; }
+    }
+
+    @media(max-width:899px){
+      .wrap{ padding-bottom:156px; } /* room for actionbar + footerbar */
+    }
+
+    /* Floating "Top" button (mobile only) */
+    .fabTop{
+      position:fixed;
+      right:12px;
+      bottom:120px; /* above actionbar */
+      z-index:12;
+      border-radius:999px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(15,23,42,.92);
+      backdrop-filter: blur(6px);
+      color:var(--text);
+      font-weight:900;
+      display:none;
+    }
+    @media(max-width:899px){
+      .fabTop{ display:inline-flex; align-items:center; gap:8px; }
+    }
   </style>
 </head>
 
 <body>
-<header>
-  <div class="wrap">
-    <h1>One Piece Swiss (Best of 1)</h1>
-    <div class="sub">Swiss real: downpairing, BYE (R1 random, después lowest), sin empates, evita rematches, drop, tiebreaks (Pts→OMW→SOS→MW).</div>
+<header id="pageTop">
+  <div class="wrap" style="padding:0 12px;">
+    <div class="brand">
+      <img src="./logo.png" alt="logo" onerror="this.style.display='none'">
+      <div>
+        <h1>OP Swiss (Best of 1)</h1>
+        <div class="sub">Swiss: downpairing, BYE (R1 random, después lowest), sin empates, evita rematches, drop, tiebreaks (Pts→OMW→SOS→MW).</div>
+      </div>
+    </div>
   </div>
 </header>
+
+<!-- Floating Top button -->
+<button class="fabTop" id="btnTop">↑ Arriba</button>
+
+<!-- Mobile action bar -->
+<div class="actionbar">
+  <div class="inner">
+    <button class="primary" id="btnNextRoundMobile">Siguiente</button>
+    <button class="ghost" id="btnShowRoundMobile">Ronda</button>
+    <button class="blue" id="btnStandingsMobile">Standings</button>
+  </div>
+</div>
 
 <div class="wrap grid">
   <!-- LEFT -->
@@ -112,7 +240,7 @@
   </div>
 
   <!-- RIGHT -->
-  <div class="card">
+  <div class="card" id="standingsCard">
     <div class="row" style="justify-content:space-between; align-items:flex-end;">
       <div>
         <div class="pill">Standings</div>
@@ -135,7 +263,7 @@
             <th class="right">W-L</th>
             <th class="right">MW%</th>
             <th class="right">OMW%</th>
-            <th class="right">SOS</th>
+            <th class="right sos">SOS</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -159,24 +287,63 @@
 </div>
 
 <div class="footerbar">
-  <div class="wrap row" style="justify-content:space-between;">
-    <div class="small muted">Se guarda en este dispositivo (localStorage). GitHub Pages solo sirve la web.</div>
+  <div class="wrap row" style="justify-content:space-between; padding:0 12px;">
+    <div class="small muted">Se guarda en este dispositivo (localStorage). Recomendado: Chrome.</div>
     <button class="ghost" id="btnInstallHint">Instalar</button>
   </div>
 </div>
 
 <script src="app.js"></script>
+
 <script>
+  // Mobile action bar mirrors main actions
+  document.getElementById('btnNextRoundMobile')?.addEventListener('click', () => {
+    document.getElementById('btnNextRound')?.click();
+  });
+  document.getElementById('btnShowRoundMobile')?.addEventListener('click', () => {
+    document.getElementById('btnShowRound')?.click();
+  });
+
+  // Scroll helpers
+  const standingsCard = document.getElementById('standingsCard');
+  document.getElementById('btnStandingsMobile')?.addEventListener('click', () => {
+    standingsCard?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  document.getElementById('btnTop')?.addEventListener('click', () => {
+    document.getElementById('pageTop')?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  // Show/hide floating top button (only after scrolling a bit)
+  const btnTop = document.getElementById('btnTop');
+  window.addEventListener('scroll', () => {
+    if (!btnTop) return;
+    btnTop.style.opacity = (window.scrollY > 350) ? "1" : "0";
+    btnTop.style.pointerEvents = (window.scrollY > 350) ? "auto" : "none";
+  }, {passive:true});
+
+  // Install hint prompt
   let deferredPrompt = null;
   window.addEventListener('beforeinstallprompt', (e) => { deferredPrompt = e; });
-  document.getElementById('btnInstallHint').addEventListener('click', async () => {
-    if (!deferredPrompt) { alert("Android/Chrome: menú ⋮ → 'Agregar a pantalla principal'. iPhone/Safari: compartir → 'Add to Home Screen'."); return; }
+  document.getElementById('btnInstallHint')?.addEventListener('click', async () => {
+    if (!deferredPrompt) { alert("Android/Chrome: menú ⋮ → 'Agregar a pantalla principal'."); return; }
     deferredPrompt.prompt();
     deferredPrompt = null;
   });
 
+  // Service Worker register with version to avoid old builds
+  // If you publish another big UI update, bump v=5, v=6...
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js?v=4').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            location.reload();
+          }
+        });
+      });
+    }).catch(()=>{});
   }
 </script>
 </body>
