@@ -306,14 +306,6 @@
     btnTop.style.pointerEvents = (window.scrollY > 350) ? "auto" : "none";
   }, {passive:true});
 
-  // Install hint prompt
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', (e) => { deferredPrompt = e; });
-  document.getElementById('btnInstallHint')?.addEventListener('click', async () => {
-    if (!deferredPrompt) { alert("Android/Chrome: menú ⋮ → 'Agregar a pantalla principal'."); return; }
-    deferredPrompt.prompt();
-    deferredPrompt = null;
-  });
 
   // Service Worker register with version to avoid old builds
   // If you publish another big UI update, bump v=5, v=6...
@@ -333,6 +325,7 @@
 </script>
 </body>
 </html>
+
 
 
 
