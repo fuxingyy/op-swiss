@@ -102,15 +102,6 @@
       .match button{ padding:8px 10px; border-radius:12px; }
     }
 
-    /* Footer info bar */
-    .footerbar{
-      position:fixed; bottom:0; left:0; right:0;
-      padding:10px; background:rgba(11,18,32,.85); backdrop-filter:blur(6px);
-      border-top:1px solid rgba(255,255,255,.06);
-      z-index:10;
-    }
-    .footerbar .wrap{ padding:0 12px; }
-
     /* Mobile action bar (3 buttons) */
     .actionbar{
       position:fixed;
@@ -286,12 +277,6 @@
   </div>
 </div>
 
-<div class="footerbar">
-  <div class="wrap row" style="justify-content:space-between; padding:0 12px;">
-    <div class="small muted">Se guarda en este dispositivo (localStorage). Recomendado: Chrome.</div>
-    <button class="ghost" id="btnInstallHint">Instalar</button>
-  </div>
-</div>
 
 <script src="app.js?v=6"></script>
 
@@ -348,6 +333,7 @@
 </script>
 </body>
 </html>
+
 
 
 
