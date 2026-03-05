@@ -333,7 +333,7 @@
   // Service Worker register with version to avoid old builds
   // If you publish another big UI update, bump v=5, v=6...
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=4').then(reg => {
+    navigator.serviceWorker.register('./sw.js?v=5').then(reg => {
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
@@ -348,4 +348,5 @@
 </script>
 </body>
 </html>
+
 
