@@ -293,7 +293,7 @@
   </div>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 
 <script>
   // Mobile action bar mirrors main actions
@@ -333,7 +333,7 @@
   // Service Worker register with version to avoid old builds
   // If you publish another big UI update, bump v=5, v=6...
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=5').then(reg => {
+    navigator.serviceWorker.register('./sw.js?v=6').then(reg => {
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
@@ -348,5 +348,6 @@
 </script>
 </body>
 </html>
+
 
 
